@@ -17,6 +17,8 @@ class ReceiveScreenViewModel : ViewModel() {
     var numberOfFiles = 0
     var fileSharingSpeed = mutableFloatStateOf(0f)
 
+
+
     fun updatePeers() {
         peerDevices.clear()
         peerDevices.addAll(WiFiP2PContext.peerList)

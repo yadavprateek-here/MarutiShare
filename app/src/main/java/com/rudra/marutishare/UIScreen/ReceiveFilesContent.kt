@@ -15,29 +15,41 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.outlined.InsertDriveFile
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -56,178 +68,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-//@Composable
-//fun ReceiveFilesContent(
-//    isVisible: MutableState<Boolean>,
-//    onStartReceiving: () -> Unit
-//) {
-//    var connectionStatus by remember { mutableStateOf("Not connected") }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp),
-//        horizontalAlignment = Alignment.CenterHorizontally,
-//        verticalArrangement = Arrangement.Top
-//    ) {
-//
-//        if (!isVisible.value) {
-//            Text("Receive Files", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            Icon(
-//                imageVector = Icons.Outlined.Wifi,
-//                contentDescription = "Wi-Fi Direct",
-//                modifier = Modifier.size(100.dp),
-//                tint = Color.Gray
-//            )
-//            Spacer(modifier = Modifier.height(12.dp))
-//            Text(
-//                text = "Not visible",
-//                fontSize = 16.sp
-//            )
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            Button(
-//                onClick = {
-//                    isVisible.value = true
-//                    onStartReceiving()
-//                    connectionStatus = "Waiting for sender..."
-//                },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("Stop Receiving")
-//            }
-//
-//            Spacer(modifier = Modifier.height(36.dp))
-//            Text("Connection Status:", fontSize = 18.sp, fontWeight = FontWeight.Medium)
-//            Spacer(modifier = Modifier.height(8.dp))
-//            Text(
-//                text = connectionStatus,
-//                fontSize = 16.sp,
-//                color = if (connectionStatus.contains("Connected")) Color.Green else Color.Gray
-//            )
-//        } else {
-//            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//
-//                CustomComponent()
-//
-//                LazyColumn {
-//                    items(ViewModels.receiveScreenViewModel.numberOfFiles) { index ->
-//                        Cards(index.toString())
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-
-//@Composable
-//fun ReceivingScreen() {
-//    val viewModel = ViewModels.receiveScreenViewModel
-//    val context = LocalContext.current
-//    var errorMessage by remember { mutableStateOf<String?>(null) }
-//    var started by remember { mutableStateOf(false) }
-//
-//    // Start Client() only once
-//    LaunchedEffect(Unit) {
-//        if (!started) {
-//            started = true
-//            try {
-//                withContext(Dispatchers.IO) {
-//                    Client() // 🔁 Your file receiving logic
-//                }
-//            } catch (e: Exception) {
-//                errorMessage = e.message
-//                Log.e("App", "Client() failed: ${e.message}")
-//            }
-//        }
-//    }
-//
-//
-//    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-//        Text("Receiving Files", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-//        Spacer(modifier = Modifier.height(12.dp))
-//
-//        if (errorMessage != null) {
-//            Text("Error: $errorMessage", color = Color.Red)
-//        }
-//
-//        CustomComponent( modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(16.dp))
-//
-//        LazyColumn {
-//            items(viewModel.numberOfFiles) { index ->
-//                Cards(index.toString())
-//            }
-//        }
-//    }
-//}
-
-//
-//@Composable
-//fun ReceivingScreen() {
-//    val viewModel = ViewModels.receiveScreenViewModel
-//    val context = LocalContext.current
-//    var errorMessage by remember { mutableStateOf<String?>(null) }
-//    var isReceiving by remember { mutableStateOf(false) }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    ) {
-//        Text("Receiving Files", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-//        Spacer(modifier = Modifier.height(12.dp))
-//
-//        // Show Error if any
-//        if (errorMessage != null) {
-//            Text("Error: $errorMessage", color = Color.Red)
-//            Spacer(modifier = Modifier.height(8.dp))
-//        }
-//
-//        // Start Receiving Button
-//        Button(
-//            onClick = {
-//                isReceiving = true
-//                errorMessage = null
-//
-//                // Launch receiving logic in background
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    try {
-//                        Client()
-//                    } catch (e: Exception) {
-//                        errorMessage = e.message
-//                        Log.e("App", "Client() failed: ${e.message}")
-//                    }
-//                }
-//            },
-//            enabled = !isReceiving,
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            Text("Start Receiving")
-//        }
-//
-//        Spacer(modifier = Modifier.height(24.dp))
-//
-//        // Show your CustomComponent
-//        CustomComponent(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(vertical = 16.dp)
-//        )
-//
-//        // Show received files
-//        LazyColumn {
-//            items(viewModel.numberOfFiles) { index ->
-//                Cards(index.toString())
-//            }
-//        }
-//    }
-//}
 
 
+//
+//@OptIn(ExperimentalMaterial3Api::class)
 //@Composable
 //fun ReceivingScreen() {
 //    val viewModel = ViewModels.receiveScreenViewModel
@@ -235,70 +79,74 @@ import kotlinx.coroutines.withContext
 //    var isReceiving by remember { mutableStateOf(false) }
 //    val receivingFiles = remember { mutableStateListOf<String>() }
 //    val receivedFiles = remember { mutableStateListOf<String>() }
+//    val totalBytesReceived = remember { mutableStateOf(0L) }
+//    val totalTimeElapsed = remember { mutableStateOf(0L) }
+//    val speedMBps = remember { mutableStateOf(0.0) }
 //
-//    var currentSpeed by remember { mutableStateOf("0 KB/s") }
+//    Box(modifier = Modifier
+//        .fillMaxSize()
+//        .background(Color(0xFFF8F9FA))) {
 //
-//    Box(modifier = Modifier.fillMaxSize()) {
 //        Column(
 //            modifier = Modifier
 //                .fillMaxSize()
-//                .padding(16.dp)
+//                .padding(bottom = 80.dp) // leave space for button
+//                .verticalScroll(rememberScrollState())
 //        ) {
-//            Text("Receive Files", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+//            TopAppBar(
+//                title = {
+//                    Text("Receive Files", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+//                },
+//                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
+//                modifier = Modifier.shadow(4.dp)
+//            )
+//
 //            Spacer(modifier = Modifier.height(16.dp))
 //
-//            if (errorMessage != null) {
-//                Text("Error: $errorMessage", color = Color.Red)
-//                Spacer(modifier = Modifier.height(8.dp))
+//            errorMessage?.let {
+//                Text(
+//                    "⚠️ $it",
+//                    color = Color.Red,
+//                    fontWeight = FontWeight.SemiBold,
+//                    modifier = Modifier.padding(16.dp)
+//                )
 //            }
 //
-//            // Speed Display
-//            if (isReceiving) {
-//                Text("Speed: $currentSpeed", color = Color.DarkGray, fontSize = 14.sp)
-//                Spacer(modifier = Modifier.height(8.dp))
-//            }
-//
-//            // Currently Receiving Files
 //            if (receivingFiles.isNotEmpty()) {
-//                Text("📥 Receiving Now", fontSize = 18.sp, fontWeight = FontWeight.Medium)
-//                Spacer(modifier = Modifier.height(8.dp))
-//
-//                LazyColumn {
-//                    items(receivingFiles) { file ->
-//                        FileRow(fileName = file, status = "Receiving", isLoading = true)
-//                    }
+//                SectionHeader("📥 Receiving Files")
+//                receivingFiles.forEach { file ->
+//                    FileCard(file, "Receiving...", isLoading = true)
 //                }
-//                Spacer(modifier = Modifier.height(8.dp))
 //            }
 //
-//            // Completed Files
 //            if (receivedFiles.isNotEmpty()) {
-//                Text("✅ Received Files", fontSize = 18.sp, fontWeight = FontWeight.Medium)
-//                Spacer(modifier = Modifier.height(8.dp))
-//
-//                LazyColumn {
-//                    items(receivedFiles) { file ->
-//                        FileRow(fileName = file, status = "Received", isLoading = false)
-//                    }
+//                SectionHeader("✅ Received Files")
+//                receivedFiles.forEach { file ->
+//                    FileCard(file, "Received", isLoading = false)
 //                }
+//            }
+//
+//            if (totalBytesReceived.value > 0) {
+//                SectionHeader("📊 Transfer Summary")
+//                SummaryCard(
+//                    sizeMB = "%.2f".format(totalBytesReceived.value / 1024.0 / 1024.0),
+//                    elapsedSec = "%.2f".format(totalTimeElapsed.value / 1000.0),
+//                    speed = "%.2f".format(speedMBps.value)
+//                )
 //            }
 //        }
 //
-//        // Button pinned to bottom
 //        Button(
 //            onClick = {
 //                isReceiving = true
 //                errorMessage = null
-//
 //                CoroutineScope(Dispatchers.IO).launch {
 //                    try {
 //                        Client(
-//                            onStartFile = { fileName ->
-//                                receivingFiles.add(fileName)
-//                            },
-//                            onProgress = { bytesRead, timeElapsed ->
-//                                val speedInKB = (bytesRead / (timeElapsed + 1).toDouble()) * 1000 / 1024
-//                                currentSpeed = "%.2f KB/s".format(speedInKB)
+//                            onStartFile = { fileName -> receivingFiles.add(fileName) },
+//                            onProgress = { bytesReadTotal, speed ->
+//                                totalBytesReceived.value = bytesReadTotal
+//                                speedMBps.value = speed
 //                            },
 //                            onFinishFile = { fileName ->
 //                                receivingFiles.remove(fileName)
@@ -308,106 +156,247 @@ import kotlinx.coroutines.withContext
 //                    } catch (e: Exception) {
 //                        errorMessage = e.message
 //                        Log.e("App", "Client() failed: ${e.message}")
-//                    } finally {
-//                        isReceiving = false
-//                        currentSpeed = "0 KB/s"
 //                    }
 //                }
 //            },
 //            enabled = !isReceiving,
 //            modifier = Modifier
 //                .align(Alignment.BottomCenter)
-//                .fillMaxWidth()
 //                .padding(16.dp)
+//                .fillMaxWidth(),
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = Color(0xFF4CAF50),
+//                contentColor = Color.White
+//            ),
+//            shape = RoundedCornerShape(12.dp)
 //        ) {
-//            Text(if (isReceiving) "Receiving..." else "Start Receiving")
+//            Text("Start Receiving", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
 //        }
-//
 //    }
 //}
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReceivingScreen() {
     val viewModel = ViewModels.receiveScreenViewModel
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isReceiving by remember { mutableStateOf(false) }
-    val receivingFiles = remember { mutableStateListOf<String>() } // files in progress
-    val receivedFiles = remember { mutableStateListOf<String>() }  // files done
+    val receivingFiles = remember { mutableStateMapOf<String, Float>() }
+    val receivedFiles = remember { mutableStateListOf<String>() }
     val totalBytesReceived = remember { mutableStateOf(0L) }
     val totalTimeElapsed = remember { mutableStateOf(0L) }
     val speedMBps = remember { mutableStateOf(0.0) }
+    val scrollState = rememberScrollState()
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(Color(0xFFF4F6F8))
     ) {
-        Text("Receive Files", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp)
+                .verticalScroll(scrollState)
+        ) {
+            TopAppBar(
+                title = { Text("Receive Files", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White,titleContentColor = Color.Black ),
+                modifier = Modifier.shadow(4.dp)
+            )
 
-        if (errorMessage != null) {
-            Text("Error: $errorMessage", color = Color.Red)
-            Spacer(modifier = Modifier.height(8.dp))
+            TransferSummaryCard(
+                sizeMB = "%.2f".format(totalBytesReceived.value / 1024.0 / 1024.0),
+                elapsedSec = "%.2f".format(totalTimeElapsed.value / 1000.0),
+                speed = "%.2f".format(speedMBps.value)
+            )
+
+            errorMessage?.let {
+                Text(
+                    "⚠️ $it",
+                    color = Color.Red,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            if (receivingFiles.isNotEmpty()) {
+                SectionHeader("📥 Receiving Files")
+                receivingFiles.forEach { (file, progress) ->
+                    FileCardWithProgress(fileName = file, progress = progress)
+                }
+
+            }
+
+            if (receivedFiles.isNotEmpty()) {
+                SectionHeader("✅ Received Files")
+                receivedFiles.forEach { file ->
+                    FileCard(file, "Received", isLoading = false)
+                }
+            }
         }
 
         Button(
             onClick = {
                 isReceiving = true
                 errorMessage = null
-
                 CoroutineScope(Dispatchers.IO).launch {
+                    val startTime = System.currentTimeMillis()
                     try {
                         Client(
                             onStartFile = { fileName ->
-                                receivingFiles.add(fileName)
+                                receivingFiles[fileName] = 0f
                             },
+
                             onProgress = { bytesReadTotal, speed ->
                                 totalBytesReceived.value = bytesReadTotal
                                 speedMBps.value = speed
+
+                                val currentFile = receivingFiles.keys.lastOrNull()
+                                if (currentFile != null) {
+                                    // We assume numberOfFiles also equals total size in bytes? Clarify if not
+                                    val fileSize = viewModel.numberOfFiles // Might be wrong — replace with actual fileSize
+                                    val progress = if (fileSize > 0) bytesReadTotal.toFloat() / fileSize else 0f
+                                    receivingFiles[currentFile] = progress
+                                }
                             },
                             onFinishFile = { fileName ->
                                 receivingFiles.remove(fileName)
                                 receivedFiles.add(fileName)
                             }
+
                         )
                     } catch (e: Exception) {
                         errorMessage = e.message
                         Log.e("App", "Client() failed: ${e.message}")
+                    } finally {
+                        totalTimeElapsed.value = System.currentTimeMillis() - startTime
                     }
                 }
             },
             enabled = !isReceiving,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+                .fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF4CAF50),
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Start Receiving")
+            Text("Start Receiving", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(24.dp))
 
-        if (receivingFiles.isNotEmpty()) {
-            Text("📥 Receiving Now", fontSize = 18.sp, fontWeight = FontWeight.Medium)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Column {
-                receivingFiles.forEach { file: String ->
-                    FileRow(fileName = file, status = "Receiving")
-                }
+@Composable
+fun FileCardWithProgress(fileName: String, progress: Float) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.InsertDriveFile, contentDescription = null, tint = Color(0xFF3F51B5))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(fileName, fontWeight = FontWeight.Medium)
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Speed: ${"%.2f".format(speedMBps.value)} MBps")
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = progress.coerceIn(0f, 1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp),
+                color = Color(0xFF4CAF50),
+                trackColor = Color.LightGray
+            )
         }
+    }
+}
 
-        if (receivedFiles.isNotEmpty()) {
-            Text("✅ Received Files", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+@Composable
+fun TransferSummaryCard(sizeMB: String, elapsedSec: String, speed: String) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text("📊 Transfer Summary", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Spacer(modifier = Modifier.height(8.dp))
+            Text("Total Size: $sizeMB MB", fontSize = 15.sp)
+            Text("Time Elapsed: $elapsedSec sec", fontSize = 15.sp)
+            Text("Speed: $speed MBps", fontSize = 15.sp)
+        }
+    }
+}
 
-            LazyColumn {
-                items(receivedFiles) { file ->
-                    FileRow(fileName = file, status = "Received")
-                }
+
+@Composable
+fun FileCard(fileName: String, status: String, isLoading: Boolean) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.InsertDriveFile,
+                contentDescription = null,
+                tint = Color(0xFF3F51B5),
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(fileName, fontWeight = FontWeight.Medium)
+                Text(status, fontSize = 13.sp, color = Color.Gray)
             }
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            }
+        }
+    }
+}
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
+    )
+}
+
+@Composable
+fun SummaryCard(sizeMB: String, elapsedSec: String, speed: String) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F3F4))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Total Size: $sizeMB MB", fontSize = 15.sp)
+            Text("Time Elapsed: $elapsedSec sec", fontSize = 15.sp)
+            Text("Avg Speed: $speed MBps", fontSize = 15.sp)
         }
     }
 }
@@ -421,8 +410,9 @@ fun FileRow(fileName: String, status: String, isLoading: Boolean = false) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .padding(vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier
@@ -430,6 +420,7 @@ fun FileRow(fileName: String, status: String, isLoading: Boolean = false) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // File status icon or shimmer animation
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -446,79 +437,37 @@ fun FileRow(fileName: String, status: String, isLoading: Boolean = false) {
             }
 
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = fileName,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
 
-            Spacer(modifier = Modifier.width(12.dp))
-
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp
+            // File name and status text
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = fileName,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-            } else {
                 Text(
                     text = status,
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
             }
+
+            // Progress indicator if file is still loading
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            }
         }
     }
 }
 
-
-
-
-
-@Composable
-fun Cards(name: String = "No_Name") {
-    Card(
-        elevation = CardDefaults.cardElevation(6.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9)),
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.InsertDriveFile,
-                contentDescription = "File Icon",
-                tint = Color(0xFF3F51B5),
-                modifier = Modifier.size(28.dp)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = Color.Black,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewCard() {
-    Cards(name = "Sample_File_Example.pdf")
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewCard() {
+//    Cards(name = "Sample_File_Example.pdf")
+//}
 

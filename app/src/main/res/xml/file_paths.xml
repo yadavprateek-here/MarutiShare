@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- For files saved in external media directories -->
+    <external-media-path
+        name="maruti_media_files"
+        path="MarutiShare/" />
+</paths>

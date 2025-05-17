@@ -84,14 +84,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
     fun getOutputDirectory(): File {
         val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it,"Share5Media").apply { mkdirs() } }
-        return if ((mediaDir != null) && mediaDir.exists()) mediaDir else filesDir
+            File(it, "MarutiShare").apply { mkdirs() }
+        }
+        return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
     }
 
 
+
 }
+
+//fun Context.getOutputDirectory(): File {
+//    val mediaDir = externalMediaDirs.firstOrNull()?.let {
+//        File(it, "MarutiShare").apply { mkdirs() }
+//    }
+//    return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
+//}
+
 
 object WiFiP2PContext {
     lateinit var manager: WifiP2pManager

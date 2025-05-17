@@ -95,14 +95,10 @@ fun SendScreen(viewModel: SenderScreenViewModel) {
         rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenMultipleDocuments()) { uris ->
             viewModel.addFiles(uris)
         }
+    if(viewModel.isConnected.value){
+        StopPeerDiscovery()
+    }
 
-
-//    if(sendFiles){
-//
-//        CoroutineScope(Dispatchers.IO).launch {
-//            viewModel.sendFiles()
-//        }
-//    }
 
     LaunchedEffect(sendFiles) {
         if (sendFiles) {
@@ -155,22 +151,6 @@ fun SendScreen(viewModel: SenderScreenViewModel) {
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-//                Text(
-//                    text = "Connected to: ${if (viewModel.isConnected.value) viewModel.clientDevice.value?.deviceName else "No Device"}",
-//                    fontSize = 14.sp,
-//                    fontWeight = FontWeight.Medium,
-//                    color = Color.Gray,
-//                    modifier = Modifier.weight(1f)
-//                )
-
-
-//                if (!viewModel.isConnected.value) {
-//                    Text(
-//                        text = "Not Connected",
-//                        color = Color.Red,
-//                        fontSize = 14.sp
-//                    )
-//                }
 
                 Text(
                     text = if (viewModel.isConnected.value)
